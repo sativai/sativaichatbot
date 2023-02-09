@@ -73,7 +73,7 @@ async def retry_handle(update: Update, context: CallbackContext):
     user_id = update.message.from_user.id
     db.set_user_attribute(user_id, "last_interaction", datetime.now())
 
-       dialog_messages = db.get_dialog_messages(user_id, dialog_id=None)
+    dialog_messages = db.get_dialog_messages(user_id, dialog_id=None)
     if len(dialog_messages) == 0:
         await update.message.reply_text("No message to retry 🤷‍♂️")
         return
