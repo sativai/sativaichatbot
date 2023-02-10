@@ -84,7 +84,7 @@ async def retry_handle(update: Update, context: CallbackContext):
 
 
 async def message_handle(update: Update, context: CallbackContext, message=None, use_new_dialog_timeout=True):
-    if not update.message.text.startswith("/ask"):
+    if not update.message.text.startswith("/gethigh"):
         return
     print(update.message.text)
     # check if message is edited
