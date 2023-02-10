@@ -24,14 +24,13 @@ import chatgpt
 
 # setup
 db = database.Database()
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(_name_)
 
 HELP_MESSAGE = """Commands:
 ⚪ /retry – Regenerate last bot answer
 ⚪ /new – Start new dialog
 ⚪ /mode – Select chat mode
 ⚪ /balance – Show balance
-⚪ /ask – Ask the bot anything
 ⚪ /help – Show help
 """
 
@@ -56,7 +55,7 @@ async def start_handle(update: Update, context: CallbackContext):
     reply_text = "Hi! I'm <b>ChatGPT</b> bot implemented with GPT-3.5 OpenAI API 🤖\n\n"
     reply_text += HELP_MESSAGE
 
-    reply_text += "\nAnd now... ask me anything with /ask command!"
+    reply_text += "\nAnd now... ask me anything!"
     
     await update.message.reply_text(reply_text, parse_mode=ParseMode.HTML)
 
@@ -72,7 +71,7 @@ async def retry_handle(update: Update, context: CallbackContext):
     await register_user_if_not_exists(update, context, update.message.from_user)
     user_id = update.message.from_user.id
     db.set_user_attribute(user_id, "last_interaction", datetime.now())
-    
+
     dialog_messages = db.get_dialog_messages(user_id, dialog_id=None)
     if len(dialog_messages) == 0:
         await update.message.reply_text("No message to retry 🤷‍♂️")
@@ -85,6 +84,9 @@ async def retry_handle(update: Update, context: CallbackContext):
 
 
 async def message_handle(update: Update, context: CallbackContext, message=None, use_new_dialog_timeout=True):
+    if not update.message.text.startswith("/ask"):
+        return
+    print(update.message.text)
     # check if message is edited
     if update.edited_message is not None:
         await edited_message_handle(update, context)
@@ -212,7 +214,7 @@ async def error_handle(update: Update, context: CallbackContext) -> None:
     logger.error(msg="Exception while handling an update:", exc_info=context.error)
 
     # collect error message
-    tb_list = traceback.format_exception(None, context.error, context.error.__traceback__)
+    tb_list = traceback.format_exception(None, context.error, context.error._traceback_)
     tb_string = "".join(tb_list)[:2000]
     update_str = update.to_dict() if isinstance(update, Update) else str(update)
     message = (
@@ -241,7 +243,7 @@ def run_bot() -> None:
     application.add_handler(CommandHandler("start", start_handle, filters=user_filter))
     application.add_handler(CommandHandler("help", help_handle, filters=user_filter))
 
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND & user_filter, message_handle))
+    application.add_handler(MessageHandler(filters.TEXT & user_filter, message_handle))
     application.add_handler(CommandHandler("retry", retry_handle, filters=user_filter))
     application.add_handler(CommandHandler("new", new_dialog_handle, filters=user_filter))
     
@@ -256,6 +258,5 @@ def run_bot() -> None:
     application.run_polling()
 
 
-if __name__ == "__main__":
+if _name_ == "_main_":
     run_bot()
-   
